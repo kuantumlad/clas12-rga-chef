@@ -1,0 +1,11 @@
+*.txt
+*.so
+*.png
+*.hipo
+*.root
+*.*~
+*.csv
+clara-5bp7p8/
+clas12_monitoring/
+clas12-workflow/
+img_clara_performance/
