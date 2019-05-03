@@ -6,6 +6,8 @@
 *.*~
 *.csv
 clara-5bp7p8/
-clas12_monitoring/
+clara_jobs/*.txt
+clas12_monitoring/plots*
+clas12_monitoring/fileLists/
 clas12-workflow/
 img_clara_performance/
