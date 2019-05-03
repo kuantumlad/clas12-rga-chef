@@ -6,6 +6,7 @@
 *.*~
 *.csv
 clara-5bp7p8/
+clara_data/
 clara_jobs/*.txt
 clas12_monitoring/plots*
 clas12_monitoring/fileLists/
