@@ -1,0 +1,11 @@
+Directory containing the necessary software for:
+(1) decoding (SWIF) 
+(2) reconstruction (COATJAVA and CLARA)
+
+
+Instructions for decoding:
+
+to start a workflow to process subfiles 40-49 for a run from the runList.txt do the following
+
+./scripts/gen-decoding.py -- workflow v0 --runGroup rga --input /mss/clas12/rg-a/data/ --workDir /volatile/clas12/rg-a/production/decoded/coatV5bp7p8/tmp/ --outDir /volatile/clas12/rg-a/production/decoded/coatV5bp7p8/ --runFile ../runList.txt --coatjava /work/clas12/rg-a/software/clara-5bp7p8/plugins/clas12/ --fileRegex .*clas[_A-Za-z]*_(\d+)\.evio\.(0004\d) --model 2
+
