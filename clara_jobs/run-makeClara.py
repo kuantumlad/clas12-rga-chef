@@ -1,12 +1,15 @@
 import glob
 import os
 import sys, getopt
+import argparse
 
+'''
 input_runList = ''
 input_recon_bank_format=''
 input_resub=False
 outputfile = ''
 input_timestamp=''
+
 
 argv = sys.argv[1:]
 
@@ -28,40 +31,81 @@ for opt, arg in opts:
     elif opt in ("-s","--timestamp"):
         input_timestamp=arg
 
+'''
+
+parse = argparse.ArgumentParser(description="Script to create clara submission files for reconstruction")
+parse.add_argument('--pass', action="store", help='production pass', dest='prod_pass',type=str,default='pass0') #remove default later
+parse.add_argument('--version', action="store", help='version pass', dest='prod_version',type=str,default='v0')
+parse.add_argument('-l', action="store", help='run list in txt file', dest='run_list',type=str)
+parse.add_argument('-t', action="store", help='jobType data/calibration/monitor', dest='job_type',type=str)
+parse.add_argument('-s', action="store", help='time stamp MMDDYYYY',dest='time_stamp',type=str)
+parse.add_argument('-r', action="store", help='create updated resubmission file', default=False,dest='resubmit',type=bool)
+parse.add_argument('-v', action="store", help='coatjava version', dest='clara_version',type=str)
+parse.add_argument('--outDir', action="store", help='dir for clara submission files',dest='out_dir',type=str,default='/w/hallb-scifs17exp/clas12/rg-a/software/clara_jobs/')
+parse.add_argument('--reconOutDir', action="store", help='out dir for cooked files ',dest='recon_out_dir',type=str)
+parse.add_argument('--decodedInDir',action='store', help='parent dir with decoded files',dest='decoded_in_dir',type=str)
+parse.add_argument('--jobSize', action="store", help='small/medium/big use exclusive for big jobs',dest='job_size',type=str)
+parse.add_argument('--farmTime',action="store",help='farm.time value',dest='farm_time',type=str,default="900")
+
+print parse.parse_args()
+
+results=parse.parse_args()
+
+input_runList = results.run_list
+input_recon_bank_format=results.job_type
+input_resub=results.resubmit
+input_timestamp=results.time_stamp
+input_version=results.clara_version
+input_outDir=results.out_dir
+input_decoded_in_dir = results.decoded_in_dir
+input_prod_pass=results.prod_pass
+resub=results.resubmit
+
+print 'Input pass is : ', results.prod_pass
+print 'Input version is : ', results.prod_version
 print 'Input file is :', input_runList
 print 'Input job type:"', input_recon_bank_format
 print 'Input Resubmit :', input_resub
 print 'Input timestamp :', input_timestamp
+print 'Input version :', input_version
+print 'Input outDir :', input_outDir
+print 'Input input_decoded_in_dir : ', input_decoded_in_dir 
+print 'Input input_recon_bank_format : ', input_recon_bank_format 
 
 
+recon_out_dir=''
+clara_recon_bank_format=input_recon_bank_format
+if clara_recon_bank_format=='monitor':
+    recon_out_dir='mon'
+elif clara_recon_bank_format=='data':
+    recon_out_dir='unfiltered'
+elif  clara_recon_bank_format =='calibration':
+    recon_out_dir='unfiltered'
+# set user inputs to variables used in code 
 
 
+if results.job_type =='calibration':
+    input_prod_pass='calib'
 
-# user inputs
-#clara version
-clara_version='clara-5bp7p8'
+ 
+clara_version="clara-"+input_version
 clara_recon_bank_format=input_recon_bank_format #'data' #'monitor' #'calibration'
-
-resub=False
-if input_resub == 'True':
-    resub=True
-
-
 clara_service_file='/w/hallb-scifs17exp/clas12/rg-a/software/'+clara_version+'/plugins/clas12/config/'+clara_recon_bank_format+'_'+input_timestamp+'.yaml'
 
 #path locations
-clara_config_dir='/w/hallb-scifs17exp/clas12/rg-a/software/clara_data/coatjava-5bp7p8/config/'
-clara_job_dir='/w/hallb-scifs17exp/clas12/rg-a/software/clara_jobs/'
-runList = open("/w/hallb-scifs17exp/clas12/rg-a/software/"+input_runList,"r") ######################### CHANGE THIS 
+clara_config_dir='/w/hallb-scifs17exp/clas12/rg-a/software/clara_data/coatjava-'+input_version+'/config/'
+clara_job_dir = results.out_dir #'/w/hallb-scifs17exp/clas12/rg-a/software/clara_jobs/'
+runList = open("/w/hallb-scifs17exp/clas12/rg-a/software/"+input_runList,"r")
+inputDir = input_decoded_in_dir #"/work/clas12/rg-a/data/decoded/"
+output_dir="/work/clas12/rg-a/production/recon/"+input_prod_pass+'/'+results.prod_version+'/'+recon_out_dir+'/'
 
-######################################
-#####   CHANGE THIS!!!!!!!!
-#####
-#inputDir="/volatile/clas12/clas12/data/calib/decoded/" #"/volatile/clas12/rg-a/production/decoded/coatV5bp7p8/"
-#inputDir="/lustre/expphy/volatile/clas12/rg-a/production/decoded/coatV5bp7p8/"# "/volatile/clas12/rg-a/production/decoded/coatV5bp7p8/"
-inputDir="/work/clas12/rg-a/data/decoded/"
 
-output_dir=""
+#set farm variables
+farm_time=results.farm_time
+farm_job_size=results.job_size
+
+
+'''output_dir=""
 farm_time=''
 if clara_recon_bank_format == 'monitor':
     farm_time='900'
@@ -73,6 +117,8 @@ elif clara_recon_bank_format == 'data':
 elif clara_recon_bank_format == 'calibration':
     farm_time='700'
     output_dir="/w/hallb-scifs17exp/clas12/rg-a/production/recon/calib/v0/filtered/"
+'''
+
 
 print ' output dir: ' + output_dir
 #get unixtime for timestamp
@@ -83,7 +129,7 @@ print "RECON TIME STAMP: " + str(unix_timestamp)
 #grab runs in run list file
 runs=[]
 for r in runList:
-    #check if directory for this run exists with 10 or more files in it.     
+    #this will be used to check if directory for this run exists with 10 or more files in it.     
     runs.append(r[:-1])
     
 
@@ -100,16 +146,19 @@ farm_cpu_options=["32","80","72"]
 farm_scaling=""
 
 farm_big_jobs=False
-if farm_big_jobs:
+if farm_job_size == 'big':
     farm_scaling="200"
-else:
+    farm_big_jobs=True
+elif farm_job_size == 'small':
     farm_scaling="20"
 
 for r in runs:
+
+    # name list with files for clara
     r_file_list='files_clas12-2_00'+str(r)+'.txt'
 
-    # check if directory with decoded files exists and has at least one file before creating jobs
-    # add another condition that it will only run reconstruction if the recon run output directory does not exist
+    # break the jobs across mutliple clara nodes 
+    # dont use qcd nodes - continually face issues where JAVA is not installed on node
     if run_counter < len(runs)/2 :
         farm_node=farm_node_options[1]
     #elif run_counter >= len(runs)/3 and run_counter < len(runs)*2.0/3.0 :
@@ -118,8 +167,6 @@ for r in runs:
         farm_node=farm_node_options[2]
     print ' sending jobs to farm node %s ' % (farm_node)
 
-    
-    #farm_node="farm16"
 
     if farm_big_jobs==True:
         if farm_node == farm_node_options[0]:
@@ -137,6 +184,8 @@ for r in runs:
 
     print ' requesting cpu %s and mem %s ' % (farm_cpu,farm_mem)
 
+
+    # check if directory with decoded files exists and has at least one file before creating jobs
     if os.path.exists(inputDir+"r00"+str(r)+'/'): ######## r here
         path, dirs, files = next(os.walk(inputDir+"r00"+str(r))) # add r here for calib
         file_count = len(files)
@@ -162,7 +211,7 @@ for r in runs:
                     if file_counter < file_limit:
                         print " adding file " + os.path.basename(f) + " to " + r_file_list
                         if resub == False:
-                            clara_file_list.write(os.path.basename(f)+'\n')
+                            #clara_file_list.write(os.path.basename(f)+'\n')
                             file_counter=file_counter+1
 
                 clara_file_list.close()
@@ -170,7 +219,7 @@ for r in runs:
             #create output directory for recon files to go if it doesnt exist already
             if not os.path.exists(output_dir+"00"+r) :
                 print output_dir+"00"+r + " doesnt exist -> Creating directory"
-                os.mkdir(output_dir+"00"+r)
+                #os.mkdir(output_dir+"00"+r)
 
             clara_job=open(clara_job_dir+clara_recon_bank_format+'_r00'+r+'_ConfigSlurm.txt',"w")
             clara_job.write('set servicesFile '+clara_service_file +'\n')
@@ -178,23 +227,25 @@ for r in runs:
             clara_job.write('set inputDir ' + inputDir +'r00'+r+'\n'); ################## add r here
             clara_job.write('set outputDir ' + output_dir +'00'+r+'\n');
             clara_job.write('set outputFilePrefix ' + clara_recon_bank_format+'_'+'\n');
-            if not os.path.exists('/work/clas12/rg-a/software/clara_data/coatjava-5bp7p8/log/'+clara_version+'/'+clara_recon_bank_format+'/'):
-                os.mkdir('/work/clas12/rg-a/software/clara_data/coatjava-5bp7p8/log/'+clara_version+'/'+clara_recon_bank_format+'/')
-            clara_job.write('set logDir /work/clas12/rg-a/software/clara_data/coatjava-5bp7p8/log/'+clara_version+'/'+clara_recon_bank_format+'/' + '\n');
+            if not os.path.exists('/work/clas12/rg-a/software/clara_data/coatjava-'+input_version+'/log/'+clara_version+'/'+clara_recon_bank_format+'/'):
+                os.mkdir('/work/clas12/rg-a/software/clara_data/coatjava-'+input_version+'/log/'+clara_version+'/'+clara_recon_bank_format+'/')
+            clara_job.write('set logDir /work/clas12/rg-a/software/clara_data/coatjava-'+input_version+'/log/'+clara_version+'/'+clara_recon_bank_format+'/' + '\n');
             clara_job.write('set session clas122'+'R00'+r+' \n')
-            clara_job.write('set description ' + clara_recon_bank_format + "UT" + str(unix_timestamp) + 'PASS0V0R00'+r +' \n')
+            clara_job.write('set description ' + clara_recon_bank_format + "UT" + str(unix_timestamp) + 'PASS0V0R00'+r +' \n') ## will needs to change later
             clara_job.write('set farm.cpu '+ farm_cpu +' \n')
             clara_job.write('set farm.memory ' + farm_mem + ' \n')
             clara_job.write('set farm.disk 5 \n')
             clara_job.write('set farm.time ' + farm_time + ' \n')
             clara_job.write('set farm.os centos7 \n')
             clara_job.write('set farm.node ' + farm_node + ' \n')
-            #clara_job.write('set farm.exclusive \n')
+            if results.job_size == 'big':
+                clara_job.write('set farm.exclusive \n')
             clara_job.write('set farm.stage /scratch/clara/clas12-2 \n')
             clara_job.write('set farm.track reconstruction \n')
             clara_job.write('set farm.scaling '+farm_scaling+' \n')
             clara_job.write('set farm.system jlab \n')
             clara_job.write('run farm \n')
+            
             clara_job.close()
     else:
         print ' output directory exists. exiting reconstruction submission '
