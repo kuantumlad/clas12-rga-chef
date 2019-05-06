@@ -1,0 +1,33 @@
+<!--   Note hypens (-) have been escaped (\-) -->
+PROJECT: clas12
+JOBNAME: rec\-clas12\-2\-monitorUT1556920664PASS0V0R005878_000
+TRACK: reconstruction
+OS: centos7
+NODE_TAG: farm16
+CPU: 0
+DISK_SPACE: 5 GB
+MEMORY: 40 GB
+TIME: 1440
+COMMAND: /w/hallb\-scifs17exp/clas12/rg\-a/software/clara_data/coatjava\-5bp7p8/config/farm_clas122R005878_monitorUT1556920664PASS0V0R005878_000.sh
+
+
+<!--
+<Request>
+  <Name name="rec-clas12-2-monitorUT1556920664PASS0V0R005878_000"></Name>
+  <Project name="clas12"></Project>
+  <OS name="centos7"></OS>
+  <NodeTag name="farm16"></NodeTag>
+  <CPU core="10"></CPU>
+  <DiskSpace space="5" unit="GB"></DiskSpace>
+  <Memory space="40" unit="GB"></Memory>
+  <Track name="reconstruction"></Track>
+  <TimeLimit unit="minutes" time="900"></TimeLimit>
+  <Command><![CDATA[
+/w/hallb-scifs17exp/clas12/rg-a/software/clara_data/coatjava-5bp7p8/config/farm_clas122R005878_monitorUT1556920664PASS0V0R005878_000.sh
+  ]]></Command>
+
+  <Job>
+  </Job>
+
+</Request>
+-->

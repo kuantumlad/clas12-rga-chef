@@ -3,7 +3,7 @@ import glob
 
 ######################################################################
 # INPUT 
-runs_to_check = open("runListFall2018Part1.txt","r")
+runs_to_check = open("runListRGK.txt","r")
 
 
 

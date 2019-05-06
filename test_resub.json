@@ -1,0 +1,16 @@
+{"name":"rga-test-recon-pbs",
+ "jobs":[
+     {"name": "rga-test-recon-01", 
+      "phase": 1, 
+      "project": "clas12", 
+      "track": "reconstruction", 
+      "shell": "/bin/tcsh", 
+      "cpuCores": 0, 
+      "diskBytes": 3000000000, 
+      "ramBytes": 3500000000, 
+      "timeSecs": 86400, 
+      "command": "/w/hallb-scifs17exp/clas12/rg-a/software/clara_data/coatjava-5bp7p8/config/farm_clas122R005868_monitorUT1556920664PASS0V0R005868_000.sh", 
+      "stdout": "file:/work/clas12/rg-a/data/decoded//logs/testin_recon.out", 
+      "stderr": "file:/work/clas12/rg-a/data/decoded//logs/testin_recon.err"}
+ ]
+}

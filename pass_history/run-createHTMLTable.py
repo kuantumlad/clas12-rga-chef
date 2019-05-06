@@ -17,8 +17,8 @@ import glob
 
 str_table = ' {| class="wikitable" \n |+ Pass Description \n !Pass Items \n !Description \n |- \n'
 
-in_txt_file = open("history_pass0_v0p2.txt","r")
-out_file = open("html_table_pass0_v0p2.txt","w")
+in_txt_file = open("history_pass0_v0p3.txt","r")
+out_file = open("html_table_pass0_v0p3.txt","w")
 
 
 lines = in_txt_file.readlines()
