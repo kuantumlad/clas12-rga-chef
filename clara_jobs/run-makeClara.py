@@ -2,6 +2,7 @@ import glob
 import os
 import sys, getopt
 import argparse
+import json
 from RunFileUtil import RunFileGroups
 from SwifJob import SwifJob
 from SwifWorkflow import SwifWorkflow
@@ -49,6 +50,7 @@ parse.add_argument('--decodedInDir',action='store', help='parent dir with decode
 parse.add_argument('--jobSize', action="store", help='small/medium/big use exclusive for big jobs',dest='job_size',type=str)
 parse.add_argument('--farmTime',action="store",help='farm.time value',dest='farm_time',type=str,default="900")
 parse.add_argument('--runPeriod',action="store",help='run period Spring2018/Fall2018/etc.',dest='run_period',type=str)
+parse.add_argument('--workflow',action="store",help='swif workflow name',dest='workflow',type=str)
 
 print parse.parse_args()
 
@@ -151,18 +153,18 @@ farm_node=""
 farm_node_options=["qcd12s","farm18","farm16"]
 farm_mem_options=["31","92","62","0"]
 farm_cpu_options=["32","80","72","0"]
-farm_scaling="20"
+farm_scaling="24"
 
 farm_big_jobs=False
 if farm_job_size == 'big':
-    farm_scaling="50"
+    farm_scaling="24"
     farm_big_jobs=True
 elif farm_job_size == 'small':
-    farm_scaling="20"
+    farm_scaling="24"
 
 
 job_number=0
-workflow = SwifWorkflow("swf_clas12_RGA_"+input_recon_bank_format)
+workflow = SwifWorkflow("swf_clas12_RGA_"+results.workflow)
 
 for r in runs:
 
@@ -244,16 +246,6 @@ for r in runs:
 
             #####################
             ## use SwifJob to help write job to json for swif
-            swif_job=SwifJob("clas12-rga-"+input_recon_bank_format)
-            swif_job.setNumber(run_counter)
-            swif_job.setPhase(1)
-            swif_job.setTime('1440s')
-            swif_job.setDisk('5GB')
-            swif_job.setCores(int(farm_cpu))
-            swif_job.setRam(farm_mem)
-            swif_job.setCmd(clara_command_dir+'clas122'+'R00'+r+'_'+clara_recon_bank_format + "UT" + str(unix_timestamp) + 'PASS0V0R00'+r+'.sh')
-            workflow.addJob(swif_job)
-            print swif_job.getJson()
 
             '''clara_job=open(clara_job_dir+clara_recon_bank_format+'_r00'+r+'_ConfigSlurm.txt',"w")
             clara_job.write('set servicesFile '+clara_service_file +'\n')
@@ -284,7 +276,7 @@ for r in runs:
             '''
             print (file_count)
    
-            if file_count > 20:
+            if file_count > 0:
 
                 farm_scaling_int=int(farm_scaling)
                 print " scaling value %d " % (farm_scaling_int)
@@ -298,8 +290,9 @@ for r in runs:
                 for jj in range(0,len(group_file_list)):
                     print " job %d " % (jj)
                                 
+                    swif_job=SwifJob("clas12-rga-"+input_recon_bank_format+"UT"+str(unix_timestamp)+"_"+str(jj))
                     
-                    clara_bash=open("/w/hallb-scifs17exp/clas12/rg-a/software/clara_data/coatjava-"+results.clara_version+"/config/clas12_rga_"+str(r)+"_"+str(jj)+".sh","w")
+                    clara_bash=open("/w/hallb-scifs17exp/clas12/rg-a/software/clara_data/coatjava-"+results.clara_version+"/config/clas12_rga_R00"+str(r)+"_"+clara_recon_bank_format + "UT" + str(unix_timestamp)+"_"+str(jj)+".sh","w")
                     if not os.path.exists("/w/hallb-scifs17exp/clas12/rg-a/software/clara_data/coatjava-"+results.clara_version+"/config/.clas122R00"+str(r)+"_"+input_recon_bank_format+"UT"+str(unix_timestamp)+"R00"+str(r)+"/"):
                         os.mkdir("/w/hallb-scifs17exp/clas12/rg-a/software/clara_data/coatjava-"+results.clara_version+"/config/.clas122R00"+str(r)+"_"+input_recon_bank_format+"UT"+str(unix_timestamp)+"R00"+str(r)+"/")
 
@@ -323,7 +316,7 @@ for r in runs:
                     clara_bash.write("sleep $[ ( $RANDOM % 20 )  + 1 ]s \n")
                     
                     clara_bash.write("/w/hallb-scifs17exp/clas12/rg-a/software/clara-"+results.clara_version+"/lib/clara/run-clara \\ \n")
-                    clara_bash.write("-i /lustre/expphy/volatile/clas12/rg-a/production/decoded/"+results.prod_pass+"/"+results.prod_version+"/00"+str(r)+" \\ \n")
+                    clara_bash.write("-i "+results.decoded_in_dir+"00"+str(r)+" \\ \n")
                     clara_bash.write("-o /work/clas12/rg-a/production/recon/"+results.prod_pass+"/"+results.prod_version+"/"+recon_out_dir+"/00"+str(r) +" \\ \n")
                     clara_bash.write("-z "+input_recon_bank_format+"_"+" \\ \n")
                     clara_bash.write("-l /scratch/clara/clas12-2 \\ \n")
@@ -336,6 +329,18 @@ for r in runs:
                     
                     clara_bash.close()
                     clara_file_list.close()
+                    
+                    swif_job.setNumber(jj)
+                    swif_job.setPhase(1)
+                    swif_job.setTime('1440s')
+                    swif_job.setDisk('5GB')
+                    swif_job.setCores(int(farm_cpu))
+                    swif_job.setRam(farm_mem)
+                    #swif_job.setCmd(clara_command_dir+'clas122'+'R00'+r+'_'+clara_recon_bank_format + "UT" + str(unix_timestamp) + 'PASS0V0R00'+r+'.sh')
+                    swif_job.setCmd("/w/hallb-scifs17exp/clas12/rg-a/software/clara_data/coatjava-"+results.clara_version+"/config/clas12_rga_R00"+str(r)+"_"+clara_recon_bank_format + "UT" + str(unix_timestamp)+"_"+str(jj)+".sh")
+                    swif_job.setLogDir("/w/hallb-scifs17exp/clas12/rg-a/software/clara_data/coatjava-"+results.clara_version+"/log/")
+                    workflow.addJob(swif_job)
+                    #print swif_job.getJson()
 
             
 
@@ -345,7 +350,14 @@ for r in runs:
                 
 
 print workflow.getJson()
+f_workflow = open("swf_clas12_RGA_"+results.workflow+".json","w")
+if f_workflow:
+    print 'writing workflow to file'
+    json.dump(workflow.getJson(),f_workflow)
 
+f_workflow.close()
+
+#workflow.submitJson()
     
     
 
